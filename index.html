@@ -1,0 +1,356 @@
+import React, { useState, useEffect } from 'react';
+
+// Component for floating background icons
+const FloatingIcons = ({ count = 20 }) => {
+  const icons = ['❤️', '💖', '✨', '�', '💕', '💞']; // Love-themed emojis
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {Array.from({ length: count }).map((_, i) => {
+        const size = `${Math.random() * 20 + 10}px`; // Random size between 10px and 30px
+        const left = `${Math.random() * 100}vw`; // Random horizontal position
+        const animationDuration = `${Math.random() * 10 + 10}s`; // Random duration between 10s and 20s
+        const animationDelay = `${Math.random() * -10}s`; // Random delay for staggered appearance
+        const opacity = `${Math.random() * 0.5 + 0.3}`; // Random opacity
+
+        return (
+          <span
+            key={i}
+            className="absolute animate-float-fade"
+            style={{
+              fontSize: size,
+              left: left,
+              top: '100%', // Start from bottom
+              opacity: opacity,
+              animationDuration: animationDuration,
+              animationDelay: animationDelay,
+              animationIterationCount: 'infinite',
+              animationTimingFunction: 'linear',
+              transform: `translateY(0) rotate(${Math.random() * 360}deg)`, // Initial rotation
+            }}
+          >
+            {icons[Math.floor(Math.random() * icons.length)]}
+          </span>
+        );
+      })}
+      {/* Define keyframes for the animation */}
+      <style>
+        {`
+        @keyframes float-fade {
+          0% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 0;
+          }
+          20% {
+            opacity: var(--opacity); /* Use the random opacity set by inline style */
+          }
+          80% {
+            opacity: var(--opacity);
+          }
+          100% {
+            transform: translateY(-120vh) rotate(720deg); /* Float up and rotate */
+            opacity: 0;
+          }
+        }
+        .animate-float-fade {
+          animation-name: float-fade;
+        }
+        `}
+      </style>
+    </div>
+  );
+};
+
+// Main App component
+function App() {
+  // State to hold all possible questions
+  const allQuestions = [
+    // 8 Choice Questions
+    { id: 1, text: "Dalam sebuah hubungan, mana yang menurutmu lebih penting: komunikasi terbuka atau rasa saling percaya yang sudah terbangun?", type: 'choice', options: ["Komunikasi terbuka", "Rasa saling percaya"] },
+    { id: 3, text: "Bagaimana kamu mengatasi konflik dalam hubungan?", type: 'choice', options: ["Menghindarinya", "Mencari solusi bersama secara langsung", "Mencari bantuan pihak ketiga (misal: konselor)"] },
+    { id: 5, text: "Apakah kamu percaya pada konsep 'belahan jiwa'?", type: 'choice', options: ["Ya, sangat percaya", "Tidak, itu hanya mitos", "Mungkin, tapi lebih ke pilihan"] },
+    { id: 9, text: "Apakah kamu lebih suka pasangan yang memiliki minat yang sama atau justru seseorang yang bisa memperluas wawasanmu dengan minat yang berbeda?", type: 'choice', options: ["Minat yang sama", "Seseorang yang bisa memperluas wawasanku", "Kombinasi keduanya"] },
+    { id: 11, text: "Jika kamu harus memilih, mana yang lebih kamu prioritaskan dalam hubungan: gairah yang membara atau rasa nyaman dan aman yang menenangkan?", type: 'choice', options: ["Gairah yang membara", "Rasa nyaman dan aman yang menenangkan"] },
+    { id: 15, text: "Dalam konteks 'memberi ruang' pada pasangan, seberapa penting kemerdekaan individu versus kebersamaan dalam hubungan yang sehat?", type: 'choice', options: ["Kemerdekaan individu lebih penting", "Kebersamaan lebih penting", "Keduanya sama pentingnya"] },
+    { id: 16, text: "Bagaimana kamu mendefinisikan 'cinta sejati'?", type: 'choice', options: ["Sebuah perasaan", "Sebuah pilihan", "Kombinasi keduanya"] },
+    { id: 24, text: "Menurutmu, apa perbedaan antara 'jatuh cinta' dan 'mencintai' seseorang?", type: 'choice', options: ["Jatuh cinta adalah emosi awal, mencintai adalah komitmen", "Tidak ada perbedaan signifikan", "Jatuh cinta itu sementara, mencintai itu abadi"] },
+    { id: 25, text: "Seberapa penting kesamaan nilai-nilai inti (misalnya, pandangan hidup, agama, etika) dalam sebuah hubungan jangka panjang?", type: 'choice', options: ["Sangat penting, mutlak harus sama", "Penting, tapi bisa dikompromikan", "Tidak terlalu penting, perbedaan bisa memperkaya"] },
+    { id: 29, text: "Apakah kamu percaya bahwa cinta bisa mengatasi segalanya, atau ada batasan tertentu?", type: 'choice', options: ["Ya, cinta bisa mengatasi segalanya", "Tidak, ada batasan yang tidak bisa diatasi cinta", "Tergantung pada situasi dan usaha"] },
+
+    // 2 Text Questions
+    { id: 2, text: "Apa bahasa cinta yang paling dominan dalam dirimu, dan bagaimana kamu biasanya menunjukkannya kepada pasangan?", type: 'text' },
+    { id: 4, text: "Menurutmu, apa tanda paling jelas bahwa sebuah hubungan memiliki potensi jangka panjang?", type: 'text' },
+    { id: 6, text: "Jika pasanganmu melakukan kesalahan besar yang melukaimu, apa hal pertama yang akan kamu cari darinya: permintaan maaf, penjelasan, atau perubahan perilaku?", type: 'text' },
+    { id: 7, text: "Bagaimana kamu menjaga romantisme agar tetap hidup dalam hubungan jangka panjang?", type: 'text' },
+    { id: 8, text: "Apa batasan yang paling penting bagimu dalam sebuah hubungan yang tidak boleh dilanggar?", type: 'text' },
+    { id: 10, text: "Apa pelajaran terbesar yang pernah kamu dapatkan dari pengalaman percintaanmu sebelumnya?", type: 'text' },
+    { id: 12, text: "Menurutmu, apa mitos terbesar tentang cinta atau hubungan yang sering dipercayai orang? Bagaimana pandanganmu tentang itu?", type: 'text' },
+    { id: 13, text: "Bagaimana kamu menghadapi perasaan cemburu dalam hubungan?", type: 'text' },
+    { id: 14, text: "Apa satu hal yang kamu tidak bisa kompromikan dalam mencari pasangan?", type: 'text' },
+    { id: 17, text: "Jika kamu dan pasangan memiliki mimpi atau tujuan hidup yang berbeda secara signifikan, bagaimana kalian akan menyikapinya?", type: 'text' },
+    { id: 18, text: "Apa red flag (tanda bahaya) yang paling cepat kamu kenali dan hindari dalam potensi hubungan?", type: 'text' },
+    { id: 19, text: "Seberapa penting peran keluarga dan teman pasangan dalam hubunganmu? Apakah kamu mencari restu atau dukungan mereka?", type: 'text' },
+    { id: 20, text: "Jika kamu bisa memberikan satu nasihat kepada dirimu yang lebih muda tentang cinta, apa itu?", type: 'text' },
+    { id: 21, text: "Bagaimana kamu menyeimbangkan antara kebutuhan pribadi dan kebutuhan pasangan dalam sebuah hubungan?", type: 'text' },
+    { id: 22, text: "Apa peran humor dalam hubunganmu? Seberapa penting tawa bersama bagimu?", type: 'text' },
+    { id: 23, text: "Bagaimana cara terbaik untuk membangun kembali kepercayaan setelah dikhianati dalam sebuah hubungan?", type: 'text' },
+    { id: 26, text: "Bagaimana kamu menunjukkan dukungan kepada pasangan saat mereka menghadapi kesulitan atau tantangan?", type: 'text' },
+    { id: 27, text: "Apa hal yang paling kamu hargai dari pasanganmu saat ini atau yang kamu cari pada calon pasangan?", type: 'text' },
+    { id: 28, text: "Bagaimana kamu menjaga 'percikan' tetap hidup setelah fase bulan madu berlalu?", type: 'text' },
+    { id: 30, text: "Jika kamu harus memilih satu kata untuk menggambarkan hubungan idealmu, kata apa itu dan mengapa?", type: 'text' }
+  ];
+
+  // State variables for the quiz
+  const [quizStarted, setQuizStarted] = useState(false); // To control initial screen
+  const [currentQuestions, setCurrentQuestions] = useState([]); // 10 selected questions
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Index of current question
+  const [answers, setAnswers] = useState({}); // Stores user's answers {questionId: answerText}
+  const [showResult, setShowResult] = useState(false); // To show result screen
+  const [feedbackMessage, setFeedbackMessage] = useState(''); // For validation messages
+  const [isLoadingLLMResponse, setIsLoadingLLMResponse] = useState(false); // For LLM loading state
+  const [llmAssessment, setLlmAssessment] = useState(''); // LLM generated assessment
+  const [llmMutiaraKata, setLlmMutiaraKata] = useState(''); // LLM generated mutiara kata
+
+  // Set a single pink gradient background
+  const backgroundColor = 'from-pink-300 via-pink-400 to-pink-500';
+
+  // Function to select 10 random questions with 8 choice and 2 text
+  const selectRandomQuestions = () => {
+    const textQuestions = allQuestions.filter(q => q.type === 'text');
+    const choiceQuestions = allQuestions.filter(q => q.type === 'choice');
+
+    // Shuffle both arrays
+    const shuffledText = [...textQuestions].sort(() => 0.5 - Math.random());
+    const shuffledChoice = [...choiceQuestions].sort(() => 0.5 - Math.random());
+
+    // Select 2 random text questions
+    const selectedTextQuestions = shuffledText.slice(0, 2);
+    // Select 8 random choice questions
+    const selectedChoiceQuestions = shuffledChoice.slice(0, 8);
+
+    // Combine and shuffle again to mix them up
+    const combinedQuestions = [...selectedTextQuestions, ...selectedChoiceQuestions];
+    return combinedQuestions.sort(() => 0.5 - Math.random());
+  };
+
+  // Effect to initialize questions when quiz starts or restarts
+  useEffect(() => {
+    if (quizStarted) {
+      setCurrentQuestions(selectRandomQuestions());
+      setAnswers({});
+      setCurrentQuestionIndex(0);
+      setShowResult(false);
+      setFeedbackMessage('');
+      setIsLoadingLLMResponse(false);
+      setLlmAssessment('');
+      setLlmMutiaraKata('');
+    }
+  }, [quizStarted]);
+
+  // Handle answer change
+  const handleAnswerChange = (e) => {
+    setAnswers({
+      ...answers,
+      [currentQuestions[currentQuestionIndex].id]: e.target.value
+    });
+    setFeedbackMessage(''); // Clear feedback when typing
+  };
+
+  // Handle next question
+  const handleNextQuestion = () => {
+    const currentAnswer = answers[currentQuestions[currentQuestionIndex].id];
+    if (!currentAnswer || currentAnswer.trim() === '') {
+      setFeedbackMessage('Mohon jawab pertanyaan ini sebelum melanjutkan.');
+      return;
+    }
+    setFeedbackMessage('');
+    if (currentQuestionIndex < currentQuestions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      // All questions answered, submit to LLM
+      handleSubmitQuiz();
+    }
+  };
+
+  // Handle quiz submission and LLM call
+  const handleSubmitQuiz = async () => {
+    setIsLoadingLLMResponse(true);
+    setShowResult(true); // Show result screen with loading indicator
+
+    const userResponses = currentQuestions.map(q => ({
+      question: q.text,
+      answer: answers[q.id] || ''
+    }));
+
+    const prompt = `Saya telah menjawab 10 pertanyaan tentang percintaan. Berikan penilaian profesional singkat tentang pendekatan saya terhadap cinta dan hubungan berdasarkan jawaban ini. Setelah itu, berikan satu kata-kata mutiara yang sangat relevan dan personal berdasarkan isi jawaban saya.
+    
+    Berikut adalah pertanyaan dan jawaban saya:
+    ${userResponses.map((res, index) => `${index + 1}. Pertanyaan: ${res.question}\n   Jawaban: ${res.answer}`).join('\n\n')}
+    
+    Format respons Anda sebagai JSON dengan dua kunci: "penilaian" (string) dan "mutiara_kata" (string).`;
+
+    try {
+      const payload = {
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              "penilaian": { "type": "STRING" },
+              "mutiara_kata": { "type": "STRING" }
+            },
+            "propertyOrdering": ["penilaian", "mutiara_kata"]
+          }
+        }
+      };
+
+      const apiKey = ""; // Canvas will automatically provide this
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (result.candidates && result.candidates.length > 0 &&
+          result.candidates[0].content && result.candidates[0].content.parts &&
+          result.candidates[0].content.parts.length > 0) {
+        const jsonString = result.candidates[0].content.parts[0].text;
+        const parsedJson = JSON.parse(jsonString);
+        setLlmAssessment(parsedJson.penilaian);
+        setLlmMutiaraKata(parsedJson.mutiara_kata);
+      } else {
+        console.error("Unexpected LLM response structure:", result);
+        setLlmAssessment("Maaf, terjadi kesalahan saat menghasilkan penilaian.");
+        setLlmMutiaraKata("Cinta adalah misteri yang indah.");
+      }
+    } catch (error) {
+      console.error("Error calling LLM API:", error);
+      setLlmAssessment("Maaf, terjadi kesalahan saat berkomunikasi dengan server.");
+      setLlmMutiaraKata("Setiap tantangan adalah kesempatan untuk tumbuh dalam cinta.");
+    } finally {
+      setIsLoadingLLMResponse(false);
+    }
+  };
+
+  // Render the quiz UI
+  const renderQuiz = () => {
+    if (showResult) {
+      return (
+        <div className="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-lg w-full max-w-2xl text-center">
+          <h2 className="text-3xl font-bold text-pink-600 mb-6">Hasil Penilaianmu!</h2>
+          {isLoadingLLMResponse ? (
+            <div className="flex flex-col items-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-pink-500 mb-4"></div>
+              <p className="text-gray-700 text-lg">Menganalisis jawabanmu... Mohon tunggu sebentar.</p>
+            </div>
+          ) : (
+            <>
+              <div className="bg-pink-50 p-4 rounded-lg mb-6 w-full">
+                <h3 className="text-xl font-semibold text-pink-700 mb-2">Penilaian Profesional:</h3>
+                <p className="text-gray-800 text-lg italic">{llmAssessment}</p>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg mb-8 w-full">
+                <h3 className="text-xl font-semibold text-purple-700 mb-2">Kata-kata Mutiara untukmu:</h3>
+                <p className="text-gray-800 text-lg font-medium">"{llmMutiaraKata}"</p>
+              </div>
+              <button
+                onClick={() => setQuizStarted(false)} // Go back to start screen to reset
+                className="bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-300 ease-in-out"
+              >
+                Main Lagi!
+              </button>
+            </>
+          )}
+        </div>
+      );
+    }
+
+    const currentQuestion = currentQuestions[currentQuestionIndex];
+    if (!currentQuestion) return null; // Should not happen if quizStarted is true
+
+    return (
+      <div className="flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-lg w-full max-w-2xl">
+        <div className="text-pink-600 text-lg font-semibold mb-4">
+          Pertanyaan {currentQuestionIndex + 1} dari {currentQuestions.length}
+        </div>
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 text-center leading-relaxed">
+          {currentQuestion.text}
+        </h2>
+        {currentQuestion.type === 'text' ? (
+          <textarea
+            className="w-full p-4 border-2 border-pink-300 rounded-lg mb-6 text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-500 transition duration-200 resize-y min-h-[120px]"
+            placeholder="Tulis jawabanmu di sini..."
+            value={answers[currentQuestion.id] || ''}
+            onChange={handleAnswerChange}
+            rows="5"
+          ></textarea>
+        ) : (
+          <div className="w-full mb-6 space-y-3">
+            {currentQuestion.options.map((option, index) => (
+              <label key={index} className="flex items-center p-3 border-2 border-pink-300 rounded-lg cursor-pointer hover:bg-pink-50 transition duration-200">
+                <input
+                  type="radio"
+                  name={`question-${currentQuestion.id}`}
+                  value={option}
+                  checked={answers[currentQuestion.id] === option}
+                  onChange={handleAnswerChange}
+                  className="form-radio h-5 w-5 text-pink-600 mr-3"
+                />
+                <span className="text-gray-800 text-lg">{option}</span>
+              </label>
+            ))}
+          </div>
+        )}
+
+        {feedbackMessage && (
+          <p className="text-red-500 text-sm mb-4">{feedbackMessage}</p>
+        )}
+        <button
+          onClick={handleNextQuestion}
+          className="bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-300 ease-in-out"
+        >
+          {currentQuestionIndex === currentQuestions.length - 1 ? 'Selesai' : 'Selanjutnya'}
+        </button>
+      </div>
+    );
+  };
+
+  // Main render
+  return (
+    <div className={`min-h-screen relative bg-gradient-to-br ${backgroundColor} flex items-center justify-center p-4 font-inter`}>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+
+      {/* Floating background icons */}
+      <FloatingIcons count={30} />
+
+      {/* Main content */}
+      <div className="relative z-10"> {/* Ensure quiz content is above icons */}
+        {!quizStarted ? (
+          <div className="flex flex-col items-center justify-center p-8 bg-white rounded-xl shadow-lg w-full max-w-md text-center">
+            <h1 className="text-4xl font-extrabold text-pink-600 mb-4">QUIZ</h1>
+            <p className="text-gray-700 text-lg mb-8">
+              𝕮𝖚𝖒𝖆 𝖖𝖚𝖎𝖟 𝖙𝖔𝖍, 𝖙𝖗𝖆𝖚𝖘𝖆𝖍 𝖙𝖆𝖐𝖚𝖙 𝖊
+            </p>
+            <button
+              onClick={() => setQuizStarted(true)}
+              className="bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-300 ease-in-out"
+            >
+              Mulai!
+            </button>
+          </div>
+        ) : (
+          renderQuiz()
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
+�
